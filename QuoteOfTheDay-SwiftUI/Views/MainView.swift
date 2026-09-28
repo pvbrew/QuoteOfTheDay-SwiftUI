@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainView: View {
 	@State private var quoteAggregateModel = QuoteAggregateModel()
+	@Environment(\.modelContext) private var context
 	
     var body: some View {
 		VStack(content: {
@@ -20,6 +22,8 @@ struct MainView: View {
 					Task {
 						await fetchRandomQuote()
 					}
+				} onFavouriteToggle: {
+					saveFavourite(quote: quote)
 				}
 			case .failed(let error):
 				ErrorView(error: error.localizedDescription) {
@@ -37,6 +41,12 @@ struct MainView: View {
 	
 	private func fetchRandomQuote() async {
 		await quoteAggregateModel.fetchRandomQuote()
+	}
+	
+	private func saveFavourite(quote: Quote) {
+		let favouriteQuote = FavouriteQuote(quote: quote.quote, author: quote.author)
+		context.insert(favouriteQuote)
+		try? context.save()
 	}
 }
 
