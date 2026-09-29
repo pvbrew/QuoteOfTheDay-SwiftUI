@@ -18,13 +18,18 @@ struct MainView: View {
 			case .loading:
 				LoadingView()
 			case .loaded(let quote):
-				QuoteView(quote: quote) {
-					Task {
-						await fetchRandomQuote()
+				QuoteView(
+					quote: quote,
+					quoteAggregateModel: quoteAggregateModel) {
+						Task {
+							await fetchRandomQuote()
+						}
+					} onFavouriteToggle: {
+						quoteAggregateModel.saveFavourite(
+							quote: quote,
+							context: context
+						)
 					}
-				} onFavouriteToggle: {
-					saveFavourite(quote: quote)
-				}
 			case .failed(let error):
 				ErrorView(error: error.localizedDescription) {
 					Task {
@@ -41,12 +46,6 @@ struct MainView: View {
 	
 	private func fetchRandomQuote() async {
 		await quoteAggregateModel.fetchRandomQuote()
-	}
-	
-	private func saveFavourite(quote: Quote) {
-		let favouriteQuote = FavouriteQuote(quote: quote.quote, author: quote.author)
-		context.insert(favouriteQuote)
-		try? context.save()
 	}
 }
 
