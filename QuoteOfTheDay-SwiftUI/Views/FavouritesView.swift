@@ -15,7 +15,12 @@ struct FavouritesView: View {
     var body: some View {
 		List {
 			ForEach(favouriteQuotes) { favouriteQuote in
-				Text(favouriteQuote.quote)
+				FavouriteView(
+					quote: Quote(
+						quote: favouriteQuote.quote,
+						author: favouriteQuote.author
+					)
+				)
 			}
 			.onDelete { indexSet in
 				indexSet.forEach { index in
