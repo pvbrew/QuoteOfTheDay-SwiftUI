@@ -21,6 +21,7 @@ struct FavouritesView: View {
 						author: favouriteQuote.author
 					)
 				)
+				.listRowBackground(Color.clear)
 			}
 			.onDelete { indexSet in
 				indexSet.forEach { index in
