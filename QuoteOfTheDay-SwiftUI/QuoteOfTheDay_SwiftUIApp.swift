@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct QuoteOfTheDay_SwiftUIApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
+				.modelContainer(for: FavouriteQuote.self)
         }
     }
 }

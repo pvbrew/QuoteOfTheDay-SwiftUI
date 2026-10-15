@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @Observable
 final class QuoteAggregateModel {
@@ -22,6 +23,25 @@ final class QuoteAggregateModel {
 			loadState = .loaded(try await apiClient.getRandomQuote())
 		} catch {
 			loadState = .failed(error)
+		}
+	}
+	
+	func saveFavourite(quote: Quote, context: ModelContext) {
+		let favouriteQuote = FavouriteQuote(
+			quote: quote.quote,
+			author: quote.author
+		)
+		context.insert(favouriteQuote)
+		try? context.save()
+	}
+
+	func isQuoteFavourite(
+		_ quote: Quote,
+		in favouriteQuotes: [FavouriteQuote]
+	) -> Bool {
+		favouriteQuotes.contains { favouriteQuote in
+			favouriteQuote.quote == quote.quote
+			&& favouriteQuote.author == quote.author
 		}
 	}
 }

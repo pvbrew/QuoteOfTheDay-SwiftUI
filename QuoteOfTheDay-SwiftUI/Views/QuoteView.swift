@@ -6,18 +6,37 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct QuoteView: View {
 	let quote: Quote
+	let quoteAggregateModel: QuoteAggregateModel
 	let onFetchNewQuote: () -> Void
+	let onFavouriteToggle: () -> Void
+	@Environment(\.modelContext) private var context
+	@Query private var favouriteQuotes: [FavouriteQuote]
 	
     var body: some View {
 		VStack(spacing: 8.0) {
 			Spacer()
-			Text(quote.quote)
-				.font(.title)
-			Text(quote.author)
-				.font(.caption)
+			HStack(spacing: 24.0) {
+				VStack {
+					Text(quote.quote)
+						.font(.title)
+					Text(quote.author)
+						.font(.caption)
+				}
+				Button {
+					onFavouriteToggle()
+				} label: {
+					Image(
+						systemName: quoteAggregateModel.isQuoteFavourite(
+							quote,
+							in: favouriteQuotes
+						) ? "heart.fill" : "heart"
+					)
+				}
+			}
 			Spacer()
 			Button("New Quote") {
 				onFetchNewQuote()
@@ -29,6 +48,8 @@ struct QuoteView: View {
 #Preview {
 	QuoteView(
 		quote: Quote(quote: "Quote", author: "Author"),
-		onFetchNewQuote: {}
+		quoteAggregateModel: QuoteAggregateModel(),
+		onFetchNewQuote: {},
+		onFavouriteToggle: {}
 	)
 }

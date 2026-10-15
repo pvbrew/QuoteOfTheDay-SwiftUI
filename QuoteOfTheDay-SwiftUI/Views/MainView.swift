@@ -6,27 +6,49 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainView: View {
 	@State private var quoteAggregateModel = QuoteAggregateModel()
-	
+	@State private var isShowingFavourites = false
+	@Environment(\.modelContext) private var context
+
     var body: some View {
-		VStack(content: {
-			switch quoteAggregateModel.loadState {
-			case .loading:
-				LoadingView()
-			case .loaded(let quote):
-				QuoteView(quote: quote) {
-					Task {
-						await fetchRandomQuote()
+		NavigationStack(root: {
+			VStack(content: {
+				switch quoteAggregateModel.loadState {
+				case .loading:
+					LoadingView()
+				case .loaded(let quote):
+					QuoteView(
+						quote: quote,
+						quoteAggregateModel: quoteAggregateModel) {
+							Task {
+								await fetchRandomQuote()
+							}
+						} onFavouriteToggle: {
+							quoteAggregateModel.saveFavourite(
+								quote: quote,
+								context: context
+							)
+						}
+				case .failed(let error):
+					ErrorView(error: error.localizedDescription) {
+						Task {
+							await fetchRandomQuote()
+						}
 					}
 				}
-			case .failed(let error):
-				ErrorView(error: error.localizedDescription) {
-					Task {
-						await fetchRandomQuote()
-					}
+			})
+			.toolbar(content: {
+				Button {
+					isShowingFavourites = true
+				} label: {
+					Text("Favourites")
 				}
+			})
+			.navigationDestination(isPresented: $isShowingFavourites) {
+				FavouritesView()
 			}
 		})
 		.padding()
