@@ -6,13 +6,35 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FavouritesView: View {
+	@Query private var favouriteQuotes: [FavouriteQuote]
+	@Environment(\.modelContext) private var context
+	
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+		List {
+			ForEach(favouriteQuotes) { favouriteQuote in
+				Text(favouriteQuote.quote)
+			}
+			.onDelete { indexSet in
+				indexSet.forEach { index in
+					context.delete(favouriteQuotes[index])
+				}
+			}
+		}
+		.scrollContentBackground(.hidden)
     }
 }
 
 #Preview {
-    FavouritesView()
+	let container = try! ModelContainer(
+		for: FavouriteQuote.self,
+		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+	)
+	let context = ModelContext(container)
+	context.insert(FavouriteQuote(quote: "Quote", author: "Author"))
+	context.insert(FavouriteQuote(quote: "Quote", author: "Author"))
+	return FavouritesView()
+		.modelContainer(container)
 }
