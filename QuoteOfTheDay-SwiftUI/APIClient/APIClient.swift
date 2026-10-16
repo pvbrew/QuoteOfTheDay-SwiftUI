@@ -36,7 +36,12 @@ struct APIClient: APIClientProtocol {
 		guard (200..<300).contains(httpResponse.statusCode) else {
 			throw NetworkError.unacceptableStatusCode(httpResponse.statusCode)
 		}
-		let quotesResponse = try JSONDecoder().decode([Quote].self, from: data)
+		guard let quotesResponse = try? JSONDecoder().decode(
+			[Quote].self,
+			from: data
+		) else {
+			throw DecodingError.cannotDecode
+		}
 		guard let quote = quotesResponse.first else {
 			throw DecodingError.noQuotes
 		}
@@ -61,11 +66,14 @@ extension APIClient {
 	
 	enum DecodingError: LocalizedError {
 		case noQuotes
+		case cannotDecode
 		
 		var errorDescription: String? {
 			switch self {
 			case .noQuotes:
 				return "No quotes found in response"
+			case .cannotDecode:
+				return "Cannot decode response"
 			}
 		}
 	}

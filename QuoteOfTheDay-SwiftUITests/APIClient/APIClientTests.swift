@@ -103,7 +103,10 @@ final class APIClientTests: XCTestCase {
 		await assertThrowsAsyncError(
 			try await sut.getRandomQuote()
 		) { error in
-			XCTAssertTrue(error is DecodingError)
+			XCTAssertEqual(
+				error as? APIClient.DecodingError,
+				.cannotDecode
+			)
 		}
 	}
 	
