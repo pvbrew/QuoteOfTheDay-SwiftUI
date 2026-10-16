@@ -1,5 +1,5 @@
 //
-//  QuotesResponse.swift
+//  Quote.swift
 //  QuoteOfTheDay-SwiftUI
 //
 //  Created by Panagiotis Vakalis on 25/9/26.

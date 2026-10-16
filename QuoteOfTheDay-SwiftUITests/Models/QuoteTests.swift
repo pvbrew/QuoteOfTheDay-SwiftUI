@@ -10,7 +10,7 @@ import XCTest
 
 final class QuoteTests: XCTestCase {
 	// MARK: - Quote decoding tests
-	func testQuotesResponse_whenDecodedWithAllTheProperties_sutShouldBeTheExpected() throws{
+	func testQuote_whenDecodedWithAllTheProperties_sutShouldBeTheExpected() throws{
 		// Given
 		let fileName = "quote"
 		
@@ -22,7 +22,7 @@ final class QuoteTests: XCTestCase {
 		XCTAssertEqual(sut.author, "Martin Luther King, Jr.")
 	}
 	
-	func testQuotesResponse_whenDecodedFromEmptyJSON_shouldThrow() throws {
+	func testQuote_whenDecodedFromEmptyJSON_shouldThrow() throws {
 		// Given
 		let fileName = "empty"
 
