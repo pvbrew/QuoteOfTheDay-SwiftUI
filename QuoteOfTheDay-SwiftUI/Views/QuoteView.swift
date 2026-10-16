@@ -29,11 +29,12 @@ struct QuoteView: View {
 				Button {
 					onFavouriteToggle()
 				} label: {
+					let isQuoteFavourite = quoteAggregateModel.findFavouriteQuote(
+						quote,
+						in: favouriteQuotes
+					) != nil
 					Image(
-						systemName: quoteAggregateModel.isQuoteFavourite(
-							quote,
-							in: favouriteQuotes
-						) ? "heart.fill" : "heart"
+						systemName: isQuoteFavourite ? "heart.fill" : "heart"
 					)
 				}
 			}

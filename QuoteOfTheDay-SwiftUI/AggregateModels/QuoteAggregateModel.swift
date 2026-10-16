@@ -34,12 +34,16 @@ final class QuoteAggregateModel {
 		context.insert(favouriteQuote)
 		try? context.save()
 	}
-
-	func isQuoteFavourite(
+	
+	func removeFavourite(quote: FavouriteQuote, context: ModelContext) {
+		context.delete(quote)
+	}
+	
+	func findFavouriteQuote(
 		_ quote: Quote,
 		in favouriteQuotes: [FavouriteQuote]
-	) -> Bool {
-		favouriteQuotes.contains { favouriteQuote in
+	) -> FavouriteQuote? {
+		favouriteQuotes.first { favouriteQuote in
 			favouriteQuote.quote == quote.quote
 			&& favouriteQuote.author == quote.author
 		}

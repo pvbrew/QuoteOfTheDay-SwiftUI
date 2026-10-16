@@ -12,6 +12,7 @@ struct MainView: View {
 	@State private var quoteAggregateModel = QuoteAggregateModel()
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
+	@Query private var favouriteQuotes: [FavouriteQuote]
 
     var body: some View {
 		NavigationStack(root: {
@@ -27,10 +28,20 @@ struct MainView: View {
 								await fetchRandomQuote()
 							}
 						} onFavouriteToggle: {
-							quoteAggregateModel.saveFavourite(
-								quote: quote,
-								context: context
-							)
+							if let favouriteQuote = quoteAggregateModel.findFavouriteQuote(
+								quote,
+								in: favouriteQuotes
+							) {
+								quoteAggregateModel.removeFavourite(
+									quote: favouriteQuote,
+									context: context
+								)
+							} else {
+								quoteAggregateModel.saveFavourite(
+									quote: quote,
+									context: context
+								)
+							}
 						}
 				case .failed(let error):
 					ErrorView(error: error.localizedDescription) {

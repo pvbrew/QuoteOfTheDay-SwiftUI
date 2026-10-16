@@ -71,10 +71,10 @@ final class QuoteAggregateModelTests: XCTestCase {
 			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
 		)
 		let context = ModelContext(container)
-
-		// When
 		let favouritesBefore = try fetch(fromContext: context)
 		XCTAssertTrue(favouritesBefore.isEmpty)
+
+		// When
 		sut.saveFavourite(quote: quote, context: context)
 
 		// Then
@@ -84,8 +84,34 @@ final class QuoteAggregateModelTests: XCTestCase {
 		XCTAssertEqual(favouritesAfter.first?.author, "Author")
 	}
 	
-	// MARK: - isQuoteFavourite(_:in:) tests
-	func testQuoteAggregateModel_whenIsQuoteFavouriteForFavouriteQuote_shouldReturnTrue() {
+	// MARK: - removeFavourite(quote:context:) tests
+	func testQuoteAggregateModel_whenRemoveFavouriteCalled_favouritesShouldNotContainQuote() throws {
+		// Given
+		let sut = QuoteAggregateModel(
+			apiClient: MockAPIClient(shouldThrowError: false)
+		)
+		let quote = Quote(quote: "Quote", author: "Author")
+		let container = try ModelContainer(
+			for: FavouriteQuote.self,
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		sut.saveFavourite(quote: quote, context: context)
+		let favouritesBefore = try fetch(fromContext: context)
+		let favouriteQuote = try XCTUnwrap(
+			sut.findFavouriteQuote(quote, in: favouritesBefore)
+		)
+		
+		// When
+		sut.removeFavourite(quote: favouriteQuote, context: context)
+		
+		// Then
+		let favouritesAfter = try fetch(fromContext: context)
+		XCTAssertTrue(favouritesAfter.isEmpty)
+	}
+	
+	// MARK: - findFavouriteQuote(_:in:) tests
+	func testQuoteAggregateModel_whenQuoteUnderFindingIsFavourite_shouldReturnTHeFavouriteQuoteObject() {
 		// Given
 		let sut = QuoteAggregateModel(
 			apiClient: MockAPIClient(shouldThrowError: false)
@@ -94,13 +120,14 @@ final class QuoteAggregateModelTests: XCTestCase {
 		let favouriteQuotes = [FavouriteQuote(quote: "Quote", author: "Author")]
 		
 		// When
-		let isQuoteFavourite = sut.isQuoteFavourite(quote, in: favouriteQuotes)
+		let favouriteQuote = sut.findFavouriteQuote(quote, in: favouriteQuotes)
 		
 		// Then
-		XCTAssertTrue(isQuoteFavourite)
+		XCTAssertEqual(favouriteQuote?.quote, "Quote")
+		XCTAssertEqual(favouriteQuote?.author, "Author")
 	}
 	
-	func testQuoteAggregateModel_whenIsQuoteFavouriteForNonFavouriteQuote_shouldReturnFalse() {
+	func testQuoteAggregateModel_whenQuoteUnderFindingIsNotFavourite_shouldReturnNil() {
 		// Given
 		let sut = QuoteAggregateModel(
 			apiClient: MockAPIClient(shouldThrowError: false)
@@ -111,10 +138,10 @@ final class QuoteAggregateModelTests: XCTestCase {
 		]
 		
 		// When
-		let isQuoteFavourite = sut.isQuoteFavourite(quote, in: favouriteQuotes)
+		let favouriteQuote = sut.findFavouriteQuote(quote, in: favouriteQuotes)
 		
 		// Then
-		XCTAssertFalse(isQuoteFavourite)
+		XCTAssertNil(favouriteQuote)
 	}
 	
 	// MARK: - Helper functions
