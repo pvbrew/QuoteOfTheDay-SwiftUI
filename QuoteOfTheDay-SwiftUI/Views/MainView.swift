@@ -44,7 +44,7 @@ struct MainView: View {
 							}
 						}
 				case .failed(let error):
-					ErrorView(error: error.localizedDescription) {
+					ErrorView(error: error) {
 						Task {
 							await fetchRandomQuote()
 						}

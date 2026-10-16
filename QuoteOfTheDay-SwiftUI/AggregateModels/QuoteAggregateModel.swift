@@ -22,7 +22,7 @@ final class QuoteAggregateModel {
 		do {
 			loadState = .loaded(try await apiClient.getRandomQuote())
 		} catch {
-			loadState = .failed(error)
+			loadState = .failed(error.localizedDescription)
 		}
 	}
 	
@@ -54,6 +54,6 @@ extension QuoteAggregateModel {
 	enum LoadState {
 		case loading
 		case loaded(Quote)
-		case failed(Error)
+		case failed(String)
 	}
 }
