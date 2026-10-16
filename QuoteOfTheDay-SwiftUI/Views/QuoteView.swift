@@ -13,7 +13,6 @@ struct QuoteView: View {
 	let quoteAggregateModel: QuoteAggregateModel
 	let onFetchNewQuote: () -> Void
 	let onFavouriteToggle: () -> Void
-	@Environment(\.modelContext) private var context
 	@Query private var favouriteQuotes: [FavouriteQuote]
 	
     var body: some View {
