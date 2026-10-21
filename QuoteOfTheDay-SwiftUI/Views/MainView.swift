@@ -28,20 +28,10 @@ struct MainView: View {
 								await fetchRandomQuote()
 							}
 						} onFavouriteToggle: {
-							if let favouriteQuote = quoteAggregateModel.findFavouriteQuote(
-								quote,
-								in: favouriteQuotes
-							) {
-								quoteAggregateModel.removeFavourite(
-									quote: favouriteQuote,
-									context: context
-								)
-							} else {
-								quoteAggregateModel.saveFavourite(
-									quote: quote,
-									context: context
-								)
-							}
+							quoteAggregateModel.toggleFavourite(
+								quote: quote,
+								context: context
+							)
 						}
 				case .failed(let error):
 					ErrorView(error: error) {

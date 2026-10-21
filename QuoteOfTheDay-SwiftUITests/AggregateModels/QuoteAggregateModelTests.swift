@@ -59,8 +59,39 @@ final class QuoteAggregateModelTests: XCTestCase {
 		}
 	}
 	
-	// MARK: - saveFavourite(quote:context) tests
-	func testQuoteAggregateModel_whenSaveFavouriteCalled_favouritesShouldContainQuote() throws {
+	// MARK: - toggleFavourite(quote:context) tests
+	func testQuoteAggregateModel_whenTogglingFavouriteOnFavouriteQuote_thisQuoteShouldNotBeInFavourites() throws {
+		// Given
+		let sut = QuoteAggregateModel(
+			apiClient: MockAPIClient(shouldThrowError: false)
+		)
+		let quote = Quote(quote: "Quote", author: "Author")
+		let favouriteQuote = FavouriteQuote(
+			quote: quote.quote,
+			author: quote.author
+		)
+		let container = try ModelContainer(
+			for: FavouriteQuote.self,
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		context.insert(favouriteQuote)
+		try? context.save()
+		
+		// When
+		sut.toggleFavourite(quote: quote, context: context)
+		
+		// Then
+		let predicate = #Predicate<FavouriteQuote> { favouriteQuote in
+			favouriteQuote.quote == quote.quote
+			&& favouriteQuote.author == quote.author
+		}
+		var descriptor = FetchDescriptor<FavouriteQuote>(predicate: predicate)
+		descriptor.fetchLimit = 1
+		XCTAssertNil(try? context.fetch(descriptor).first)
+	}
+	
+	func testQuoteAggregateModel_whenTogglingFavouriteOnNonFavouriteQuote_thisQuoteShouldBeInFavourites() throws {
 		// Given
 		let sut = QuoteAggregateModel(
 			apiClient: MockAPIClient(shouldThrowError: false)
@@ -71,77 +102,18 @@ final class QuoteAggregateModelTests: XCTestCase {
 			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
 		)
 		let context = ModelContext(container)
-		let favouritesBefore = try fetch(fromContext: context)
-		XCTAssertTrue(favouritesBefore.isEmpty)
-
-		// When
-		sut.saveFavourite(quote: quote, context: context)
-
-		// Then
-		let favouritesAfter = try fetch(fromContext: context)
-		XCTAssertEqual(favouritesAfter.count, 1)
-		XCTAssertEqual(favouritesAfter.first?.quote, "Quote")
-		XCTAssertEqual(favouritesAfter.first?.author, "Author")
-	}
-	
-	// MARK: - removeFavourite(quote:context:) tests
-	func testQuoteAggregateModel_whenRemoveFavouriteCalled_favouritesShouldNotContainQuote() throws {
-		// Given
-		let sut = QuoteAggregateModel(
-			apiClient: MockAPIClient(shouldThrowError: false)
-		)
-		let quote = Quote(quote: "Quote", author: "Author")
-		let container = try ModelContainer(
-			for: FavouriteQuote.self,
-			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-		)
-		let context = ModelContext(container)
-		sut.saveFavourite(quote: quote, context: context)
-		let favouritesBefore = try fetch(fromContext: context)
-		let favouriteQuote = try XCTUnwrap(
-			sut.findFavouriteQuote(quote, in: favouritesBefore)
-		)
 		
 		// When
-		sut.removeFavourite(quote: favouriteQuote, context: context)
+		sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
-		let favouritesAfter = try fetch(fromContext: context)
-		XCTAssertTrue(favouritesAfter.isEmpty)
-	}
-	
-	// MARK: - findFavouriteQuote(_:in:) tests
-	func testQuoteAggregateModel_whenQuoteUnderFindingIsFavourite_shouldReturnTHeFavouriteQuoteObject() {
-		// Given
-		let sut = QuoteAggregateModel(
-			apiClient: MockAPIClient(shouldThrowError: false)
-		)
-		let quote = Quote(quote: "Quote", author: "Author")
-		let favouriteQuotes = [FavouriteQuote(quote: "Quote", author: "Author")]
-		
-		// When
-		let favouriteQuote = sut.findFavouriteQuote(quote, in: favouriteQuotes)
-		
-		// Then
-		XCTAssertEqual(favouriteQuote?.quote, "Quote")
-		XCTAssertEqual(favouriteQuote?.author, "Author")
-	}
-	
-	func testQuoteAggregateModel_whenQuoteUnderFindingIsNotFavourite_shouldReturnNil() {
-		// Given
-		let sut = QuoteAggregateModel(
-			apiClient: MockAPIClient(shouldThrowError: false)
-		)
-		let quote = Quote(quote: "Quote", author: "Author")
-		let favouriteQuotes = [
-			FavouriteQuote(quote: "Quote1", author: "Author1")
-		]
-		
-		// When
-		let favouriteQuote = sut.findFavouriteQuote(quote, in: favouriteQuotes)
-		
-		// Then
-		XCTAssertNil(favouriteQuote)
+		let predicate = #Predicate<FavouriteQuote> { favouriteQuote in
+			favouriteQuote.quote == quote.quote
+			&& favouriteQuote.author == quote.author
+		}
+		var descriptor = FetchDescriptor<FavouriteQuote>(predicate: predicate)
+		descriptor.fetchLimit = 1
+		XCTAssertNotNil(try? context.fetch(descriptor).first)
 	}
 	
 	// MARK: - Helper functions

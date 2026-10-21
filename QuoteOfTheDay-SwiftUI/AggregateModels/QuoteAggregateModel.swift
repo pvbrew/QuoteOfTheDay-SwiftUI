@@ -26,7 +26,15 @@ final class QuoteAggregateModel {
 		}
 	}
 	
-	func saveFavourite(quote: Quote, context: ModelContext) {
+	func toggleFavourite(quote: Quote, context: ModelContext) {
+		if let favouriteQuote = findFavourite(quote: quote, context: context) {
+			removeFavourite(quote: favouriteQuote, context: context)
+		} else {
+			saveFavourite(quote: quote, context: context)
+		}
+	}
+	
+	private func saveFavourite(quote: Quote, context: ModelContext) {
 		let favouriteQuote = FavouriteQuote(
 			quote: quote.quote,
 			author: quote.author
@@ -35,18 +43,22 @@ final class QuoteAggregateModel {
 		try? context.save()
 	}
 	
-	func removeFavourite(quote: FavouriteQuote, context: ModelContext) {
+	private func removeFavourite(quote: FavouriteQuote, context: ModelContext) {
 		context.delete(quote)
+		try? context.save()
 	}
-	
-	func findFavouriteQuote(
-		_ quote: Quote,
-		in favouriteQuotes: [FavouriteQuote]
+
+	private func findFavourite(
+		quote: Quote,
+		context: ModelContext
 	) -> FavouriteQuote? {
-		favouriteQuotes.first { favouriteQuote in
+		let predicate = #Predicate<FavouriteQuote> { favouriteQuote in
 			favouriteQuote.quote == quote.quote
 			&& favouriteQuote.author == quote.author
 		}
+		var descriptor = FetchDescriptor<FavouriteQuote>(predicate: predicate)
+		descriptor.fetchLimit = 1
+		return try? context.fetch(descriptor).first
 	}
 }
 

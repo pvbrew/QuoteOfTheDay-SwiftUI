@@ -9,11 +9,28 @@ import SwiftUI
 import SwiftData
 
 struct QuoteView: View {
-	let quote: Quote
+	private let quote: Quote
 	let quoteAggregateModel: QuoteAggregateModel
 	let onFetchNewQuote: () -> Void
 	let onFavouriteToggle: () -> Void
-	@Query private var favouriteQuotes: [FavouriteQuote]
+	@Query private var matchingFavouriteQuotes: [FavouriteQuote]
+	
+	init(
+		quote: Quote,
+		quoteAggregateModel: QuoteAggregateModel,
+		onFetchNewQuote: @escaping () -> Void,
+		onFavouriteToggle: @escaping () -> Void
+	) {
+		self.quote = quote
+		self.quoteAggregateModel = quoteAggregateModel
+		self.onFetchNewQuote = onFetchNewQuote
+		self.onFavouriteToggle = onFavouriteToggle
+		_matchingFavouriteQuotes = Query(
+			filter: #Predicate<FavouriteQuote> { favouriteQuote in
+				favouriteQuote.quote == quote.quote
+				&& favouriteQuote.author == quote.author
+			})
+	}
 	
     var body: some View {
 		VStack(spacing: 8.0) {
@@ -28,12 +45,8 @@ struct QuoteView: View {
 				Button {
 					onFavouriteToggle()
 				} label: {
-					let isQuoteFavourite = quoteAggregateModel.findFavouriteQuote(
-						quote,
-						in: favouriteQuotes
-					) != nil
 					Image(
-						systemName: isQuoteFavourite ? "heart.fill" : "heart"
+						systemName: matchingFavouriteQuotes.isEmpty ? "heart" : "heart.fill"
 					)
 				}
 			}
