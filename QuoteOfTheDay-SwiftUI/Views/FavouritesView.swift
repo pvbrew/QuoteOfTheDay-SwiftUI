@@ -55,7 +55,6 @@ struct FavouritesView: View {
 		for: FavouriteQuote.self,
 		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
 	)
-	let context = ModelContext(container)
 	return FavouritesView()
 		.modelContainer(container)
 }
