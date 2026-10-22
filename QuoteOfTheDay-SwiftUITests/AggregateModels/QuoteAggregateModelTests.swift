@@ -115,11 +115,4 @@ final class QuoteAggregateModelTests: XCTestCase {
 		descriptor.fetchLimit = 1
 		XCTAssertNotNil(try? context.fetch(descriptor).first)
 	}
-	
-	// MARK: - Helper functions
-	private func fetch(
-		fromContext context: ModelContext
-	) throws -> [FavouriteQuote] {
-		try context.fetch(FetchDescriptor<FavouriteQuote>())
-	}
 }

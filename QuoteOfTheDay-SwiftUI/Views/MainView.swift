@@ -12,7 +12,6 @@ struct MainView: View {
 	@State private var quoteAggregateModel: QuoteAggregateModel
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
-	@Query private var favouriteQuotes: [FavouriteQuote]
 	
 	init(
 		quoteAggregateModel: QuoteAggregateModel = QuoteAggregateModel()
