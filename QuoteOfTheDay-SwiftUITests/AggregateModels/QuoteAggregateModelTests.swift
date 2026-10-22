@@ -82,13 +82,37 @@ final class QuoteAggregateModelTests: XCTestCase {
 		sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
-		let predicate = #Predicate<FavouriteQuote> { favouriteQuote in
-			favouriteQuote.quote == quote.quote
-			&& favouriteQuote.author == quote.author
-		}
-		var descriptor = FetchDescriptor<FavouriteQuote>(predicate: predicate)
-		descriptor.fetchLimit = 1
-		XCTAssertNil(try? context.fetch(descriptor).first)
+		XCTAssertTrue(try fetch(fromContext: context).isEmpty)
+	}
+	
+	func testQuoteAggregateModel_whenTogglingFavouriteOnFavouriteQuoteButHasOtherFavouriteQuotes_thisQuoteShouldNotBeInFavourites() throws {
+		// Given
+		let sut = QuoteAggregateModel(
+			apiClient: MockAPIClient(shouldThrowError: false)
+		)
+		let quote = Quote(quote: "Quote", author: "Author")
+		let favouriteQuote = FavouriteQuote(
+			quote: quote.quote,
+			author: quote.author
+		)
+		let favouriteQuote2 = FavouriteQuote(quote: "Quote2", author: "Author2")
+		let container = try ModelContainer(
+			for: FavouriteQuote.self,
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		context.insert(favouriteQuote)
+		context.insert(favouriteQuote2)
+		try? context.save()
+		
+		// When
+		sut.toggleFavourite(quote: quote, context: context)
+		
+		// Then
+		let favourites = try fetch(fromContext: context)
+		XCTAssertEqual(favourites.count, 1)
+		XCTAssertEqual(favourites.first?.quote, "Quote2")
+		XCTAssertEqual(favourites.first?.author, "Author2")
 	}
 	
 	func testQuoteAggregateModel_whenTogglingFavouriteOnNonFavouriteQuote_thisQuoteShouldBeInFavourites() throws {
@@ -107,12 +131,16 @@ final class QuoteAggregateModelTests: XCTestCase {
 		sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
-		let predicate = #Predicate<FavouriteQuote> { favouriteQuote in
-			favouriteQuote.quote == quote.quote
-			&& favouriteQuote.author == quote.author
-		}
-		var descriptor = FetchDescriptor<FavouriteQuote>(predicate: predicate)
-		descriptor.fetchLimit = 1
-		XCTAssertNotNil(try? context.fetch(descriptor).first)
+		let favourites = try fetch(fromContext: context)
+		XCTAssertEqual(favourites.count, 1)
+		XCTAssertEqual(favourites.first?.quote, "Quote")
+		XCTAssertEqual(favourites.first?.author, "Author")
+	}
+	
+	// MARK: - Helper functions
+	private func fetch(
+		fromContext context: ModelContext
+	) throws -> [FavouriteQuote] {
+		try context.fetch(FetchDescriptor<FavouriteQuote>())
 	}
 }
