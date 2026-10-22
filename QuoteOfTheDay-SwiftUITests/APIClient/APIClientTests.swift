@@ -28,7 +28,11 @@ final class APIClientTests: XCTestCase {
 		let quote = try await sut.getRandomQuote()
 		
 		// Then
-		XCTAssertNotNil(quote)
+		XCTAssertEqual(
+			quote.quote,
+			"The time is always right to do what is right."
+		)
+		XCTAssertEqual(quote.author, "Martin Luther King, Jr.")
 	}
 	
 	func testAPIClient_whenStatusCodeIsUnacceptable_shouldThrowUnacceptableStatusCodeError() async throws {

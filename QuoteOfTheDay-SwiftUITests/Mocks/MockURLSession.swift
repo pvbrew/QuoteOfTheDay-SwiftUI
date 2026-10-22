@@ -12,7 +12,8 @@ final class MockURLSession: URLSessionProtocol {
 	private let data: Data
 	private let urlResponse: URLResponse
 	private let error: Error?
-	
+	private(set) var receivedRequest: URLRequest?
+
 	init(data: Data, urlResponse: URLResponse, error: Error?) {
 		self.data = data
 		self.urlResponse = urlResponse
@@ -20,6 +21,7 @@ final class MockURLSession: URLSessionProtocol {
 	}
 	
 	func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+		receivedRequest = request
 		if let error {
 			throw error
 		}
