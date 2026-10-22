@@ -9,10 +9,16 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
-	@State private var quoteAggregateModel = QuoteAggregateModel()
+	@State private var quoteAggregateModel: QuoteAggregateModel
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
 	@Query private var favouriteQuotes: [FavouriteQuote]
+	
+	init(
+		quoteAggregateModel: QuoteAggregateModel = QuoteAggregateModel()
+	) {
+		self.quoteAggregateModel = quoteAggregateModel
+	}
 
     var body: some View {
 		NavigationStack(root: {
@@ -21,9 +27,7 @@ struct MainView: View {
 				case .loading:
 					LoadingView()
 				case .loaded(let quote):
-					QuoteView(
-						quote: quote,
-						quoteAggregateModel: quoteAggregateModel) {
+					QuoteView(quote: quote) {
 							Task {
 								await fetchRandomQuote()
 							}
@@ -64,5 +68,12 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+	final class MockAPIClient: APIClientProtocol {
+		func getRandomQuote() async throws -> Quote {
+			Quote(quote: "Quote", author: "Author")
+		}
+	}
+	return MainView(
+		quoteAggregateModel: QuoteAggregateModel(apiClient: MockAPIClient())
+	)
 }

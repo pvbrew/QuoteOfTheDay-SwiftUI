@@ -10,19 +10,16 @@ import SwiftData
 
 struct QuoteView: View {
 	private let quote: Quote
-	let quoteAggregateModel: QuoteAggregateModel
 	let onFetchNewQuote: () -> Void
 	let onFavouriteToggle: () -> Void
 	@Query private var matchingFavouriteQuotes: [FavouriteQuote]
 	
 	init(
 		quote: Quote,
-		quoteAggregateModel: QuoteAggregateModel,
 		onFetchNewQuote: @escaping () -> Void,
 		onFavouriteToggle: @escaping () -> Void
 	) {
 		self.quote = quote
-		self.quoteAggregateModel = quoteAggregateModel
 		self.onFetchNewQuote = onFetchNewQuote
 		self.onFavouriteToggle = onFavouriteToggle
 		_matchingFavouriteQuotes = Query(
@@ -58,11 +55,30 @@ struct QuoteView: View {
     }
 }
 
-#Preview {
-	QuoteView(
-		quote: Quote(quote: "Quote", author: "Author"),
-		quoteAggregateModel: QuoteAggregateModel(),
-		onFetchNewQuote: {},
-		onFavouriteToggle: {}
+#Preview("Favourite quote") {
+	let quote = Quote(quote: "Quote", author: "Author")
+	let container = try! ModelContainer(
+		for: FavouriteQuote.self,
+		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
 	)
+	let context = ModelContext(container)
+	context.insert(FavouriteQuote(quote: quote.quote, author: quote.author))
+	
+	return QuoteView(quote: quote, onFetchNewQuote: {
+	}, onFavouriteToggle: {
+	}).modelContainer(container)
+}
+
+#Preview("Non favourite quote") {
+	let quote = Quote(quote: "Quote", author: "Author")
+	let container = try! ModelContainer(
+		for: FavouriteQuote.self,
+		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+	)
+	let context = ModelContext(container)
+	context.insert(FavouriteQuote(quote: "Quote1", author: "Author1"))
+	
+	return QuoteView(quote: quote, onFetchNewQuote: {
+	}, onFavouriteToggle: {
+	}).modelContainer(container)
 }
