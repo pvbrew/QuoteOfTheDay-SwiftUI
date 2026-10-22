@@ -12,6 +12,7 @@ struct MainView: View {
 	@State private var quoteAggregateModel: QuoteAggregateModel
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
+	@State private var errorTogglingFavourite: String?
 	
 	init(
 		quoteAggregateModel: QuoteAggregateModel = QuoteAggregateModel()
@@ -31,10 +32,14 @@ struct MainView: View {
 								await fetchRandomQuote()
 							}
 						} onFavouriteToggle: {
-							quoteAggregateModel.toggleFavourite(
-								quote: quote,
-								context: context
-							)
+							do {
+								try quoteAggregateModel.toggleFavourite(
+									quote: quote,
+									context: context
+								)
+							} catch {
+								errorTogglingFavourite = error.localizedDescription
+							}
 						}
 				case .failed(let error):
 					ErrorView(error: error) {
@@ -56,6 +61,23 @@ struct MainView: View {
 			}
 		})
 		.padding()
+		.alert(
+			"Error",
+			isPresented: Binding(
+				get: { errorTogglingFavourite != nil },
+				set: { isPresented in
+					if !isPresented {
+						errorTogglingFavourite = nil
+					}
+				}
+			),
+			actions: {
+				Button("OK", role: .cancel) {}
+			},
+			message: {
+				Text(errorTogglingFavourite ?? "")
+			}
+		)
 		.task {
 			await fetchRandomQuote()
 		}
