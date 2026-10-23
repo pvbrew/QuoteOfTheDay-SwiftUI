@@ -58,6 +58,7 @@ struct MainView: View {
 			})
 			.navigationDestination(isPresented: $isShowingFavourites) {
 				FavouritesView()
+					.environment(quoteAggregateModel)
 			}
 		})
 		.padding()

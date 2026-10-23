@@ -46,7 +46,7 @@ final class QuoteAggregateModel {
 		try context.save()
 	}
 	
-	private func removeFavourite(
+	func removeFavourite(
 		quote: FavouriteQuote,
 		context: ModelContext
 	) throws {

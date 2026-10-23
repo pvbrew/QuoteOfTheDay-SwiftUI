@@ -11,6 +11,8 @@ import SwiftData
 struct FavouritesView: View {
 	@Query private var favouriteQuotes: [FavouriteQuote]
 	@Environment(\.modelContext) private var context
+	@Environment(QuoteAggregateModel.self) private var quoteAggregateModel
+	@State private var errorDeletingFavourite: String?
 	
     var body: some View {
 		if !favouriteQuotes.isEmpty {
@@ -26,11 +28,35 @@ struct FavouritesView: View {
 				}
 				.onDelete { indexSet in
 					indexSet.forEach { index in
-						context.delete(favouriteQuotes[index])
+						do {
+							try quoteAggregateModel.removeFavourite(
+								quote: favouriteQuotes[index],
+								context: context
+							)
+						} catch {
+							errorDeletingFavourite = error.localizedDescription
+						}
 					}
 				}
 			}
 			.scrollContentBackground(.hidden)
+			.alert(
+				"Error",
+				isPresented: Binding(
+					get: { errorDeletingFavourite != nil },
+					set: { isPresented in
+						if !isPresented {
+							errorDeletingFavourite = nil
+						}
+					}
+				),
+				actions: {
+					Button("OK", role: .cancel) {}
+				},
+				message: {
+					Text(errorDeletingFavourite ?? "")
+				}
+			)
 		} else {
 			ContentUnavailableView("No favourites", systemImage: "heart.slash")
 		}
