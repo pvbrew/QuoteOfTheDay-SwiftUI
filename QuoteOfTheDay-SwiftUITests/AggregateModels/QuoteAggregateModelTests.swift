@@ -59,8 +59,63 @@ final class QuoteAggregateModelTests: XCTestCase {
 		}
 	}
 	
-	// MARK: - saveFavourite(quote:context) tests
-	func testQuoteAggregateModel_whenSaveFavouriteCalled_favouritesShouldContainQuote() throws {
+	// MARK: - toggleFavourite(quote:context) tests
+	func testQuoteAggregateModel_whenTogglingFavouriteOnFavouriteQuote_thisQuoteShouldNotBeInFavourites() throws {
+		// Given
+		let sut = QuoteAggregateModel(
+			apiClient: MockAPIClient(shouldThrowError: false)
+		)
+		let quote = Quote(quote: "Quote", author: "Author")
+		let favouriteQuote = FavouriteQuote(
+			quote: quote.quote,
+			author: quote.author
+		)
+		let container = try ModelContainer(
+			for: FavouriteQuote.self,
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		context.insert(favouriteQuote)
+		try context.save()
+		
+		// When
+		try sut.toggleFavourite(quote: quote, context: context)
+		
+		// Then
+		XCTAssertTrue(try fetch(fromContext: context).isEmpty)
+	}
+	
+	func testQuoteAggregateModel_whenTogglingFavouriteOnFavouriteQuoteButHasOtherFavouriteQuotes_thisQuoteShouldNotBeInFavourites() throws {
+		// Given
+		let sut = QuoteAggregateModel(
+			apiClient: MockAPIClient(shouldThrowError: false)
+		)
+		let quote = Quote(quote: "Quote", author: "Author")
+		let favouriteQuote = FavouriteQuote(
+			quote: quote.quote,
+			author: quote.author
+		)
+		let favouriteQuote2 = FavouriteQuote(quote: "Quote2", author: "Author2")
+		let container = try ModelContainer(
+			for: FavouriteQuote.self,
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let context = ModelContext(container)
+		context.insert(favouriteQuote)
+		context.insert(favouriteQuote2)
+		try context.save()
+		
+		// When
+		try sut.toggleFavourite(quote: quote, context: context)
+		
+		// Then
+		let favourites = try fetch(fromContext: context)
+		XCTAssertEqual(favourites.count, 1)
+		XCTAssertEqual(favourites.first?.quote, "Quote2")
+		XCTAssertEqual(favourites.first?.author, "Author2")
+	}
+	
+	func testQuoteAggregateModel_whenTogglingFavouriteOnNonFavouriteQuote_thisQuoteShouldBeInFavourites() throws {
 		// Given
 		let sut = QuoteAggregateModel(
 			apiClient: MockAPIClient(shouldThrowError: false)
@@ -71,50 +126,15 @@ final class QuoteAggregateModelTests: XCTestCase {
 			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
 		)
 		let context = ModelContext(container)
-
-		// When
-		let favouritesBefore = try fetch(fromContext: context)
-		XCTAssertTrue(favouritesBefore.isEmpty)
-		sut.saveFavourite(quote: quote, context: context)
-
-		// Then
-		let favouritesAfter = try fetch(fromContext: context)
-		XCTAssertEqual(favouritesAfter.count, 1)
-		XCTAssertEqual(favouritesAfter.first?.quote, "Quote")
-		XCTAssertEqual(favouritesAfter.first?.author, "Author")
-	}
-	
-	// MARK: - isQuoteFavourite(_:in:) tests
-	func testQuoteAggregateModel_whenIsQuoteFavouriteForFavouriteQuote_shouldReturnTrue() {
-		// Given
-		let sut = QuoteAggregateModel(
-			apiClient: MockAPIClient(shouldThrowError: false)
-		)
-		let quote = Quote(quote: "Quote", author: "Author")
-		let favouriteQuotes = [FavouriteQuote(quote: "Quote", author: "Author")]
 		
 		// When
-		let isQuoteFavourite = sut.isQuoteFavourite(quote, in: favouriteQuotes)
+		try sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
-		XCTAssertTrue(isQuoteFavourite)
-	}
-	
-	func testQuoteAggregateModel_whenIsQuoteFavouriteForNonFavouriteQuote_shouldReturnFalse() {
-		// Given
-		let sut = QuoteAggregateModel(
-			apiClient: MockAPIClient(shouldThrowError: false)
-		)
-		let quote = Quote(quote: "Quote", author: "Author")
-		let favouriteQuotes = [
-			FavouriteQuote(quote: "Quote1", author: "Author1")
-		]
-		
-		// When
-		let isQuoteFavourite = sut.isQuoteFavourite(quote, in: favouriteQuotes)
-		
-		// Then
-		XCTAssertFalse(isQuoteFavourite)
+		let favourites = try fetch(fromContext: context)
+		XCTAssertEqual(favourites.count, 1)
+		XCTAssertEqual(favourites.first?.quote, "Quote")
+		XCTAssertEqual(favourites.first?.author, "Author")
 	}
 	
 	// MARK: - Helper functions

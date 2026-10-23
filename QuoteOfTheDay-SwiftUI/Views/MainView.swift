@@ -9,9 +9,16 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
-	@State private var quoteAggregateModel = QuoteAggregateModel()
+	@State private var quoteAggregateModel: QuoteAggregateModel
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
+	@State private var errorTogglingFavourite: String?
+	
+	init(
+		quoteAggregateModel: QuoteAggregateModel = QuoteAggregateModel()
+	) {
+		self.quoteAggregateModel = quoteAggregateModel
+	}
 
     var body: some View {
 		NavigationStack(root: {
@@ -20,20 +27,22 @@ struct MainView: View {
 				case .loading:
 					LoadingView()
 				case .loaded(let quote):
-					QuoteView(
-						quote: quote,
-						quoteAggregateModel: quoteAggregateModel) {
+					QuoteView(quote: quote) {
 							Task {
 								await fetchRandomQuote()
 							}
 						} onFavouriteToggle: {
-							quoteAggregateModel.saveFavourite(
-								quote: quote,
-								context: context
-							)
+							do {
+								try quoteAggregateModel.toggleFavourite(
+									quote: quote,
+									context: context
+								)
+							} catch {
+								errorTogglingFavourite = error.localizedDescription
+							}
 						}
 				case .failed(let error):
-					ErrorView(error: error.localizedDescription) {
+					ErrorView(error: error) {
 						Task {
 							await fetchRandomQuote()
 						}
@@ -48,10 +57,11 @@ struct MainView: View {
 				}
 			})
 			.navigationDestination(isPresented: $isShowingFavourites) {
-				FavouritesView()
+				FavouritesView(quoteAggregateModel: quoteAggregateModel)
 			}
 		})
 		.padding()
+		.errorAlert(message: $errorTogglingFavourite)
 		.task {
 			await fetchRandomQuote()
 		}
@@ -63,5 +73,17 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+	final class MockAPIClient: APIClientProtocol {
+		func getRandomQuote() async throws -> Quote {
+			Quote(quote: "Quote", author: "Author")
+		}
+	}
+	let container = try! ModelContainer(
+		for: FavouriteQuote.self,
+		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+	)
+	return MainView(
+		quoteAggregateModel: QuoteAggregateModel(apiClient: MockAPIClient())
+	)
+	.modelContainer(container)
 }

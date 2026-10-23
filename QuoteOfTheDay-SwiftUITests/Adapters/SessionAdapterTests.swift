@@ -12,16 +12,44 @@ final class SessionAdapterTests: XCTestCase {
 	let url = URL(string: "https://www.apple.com")!
 	
 	// MARK: - performRequest(using:) tests
-	func testSessionAdapter_whenPerformingRequestDoesNotReturnError_dataAndURLResponseShouldNotBeNil() async throws {
+	func testSessionAdapter_whenPerformingRequestSucceeds_shouldReturnSessionDataAndResponse() async throws {
 		// Given
-		let sut = makeSut(withError: nil)
-		
+		let expectedData = Data("quote".utf8)
+		let expectedResponse = HTTPURLResponse(
+			url: url,
+			statusCode: 200,
+			httpVersion: nil,
+			headerFields: nil
+		)!
+		let session = MockURLSession(
+			data: expectedData,
+			urlResponse: expectedResponse,
+			error: nil
+		)
+		let sut = SessionAdapter(session: session)
+
 		// When
 		let (data, urlResponse) = try await sut.performRequest(using: url)
-		
+
 		// Then
-		XCTAssertNotNil(data)
-		XCTAssertNotNil(urlResponse)
+		XCTAssertEqual(data, expectedData)
+		XCTAssertTrue(urlResponse === expectedResponse)
+	}
+
+	func testSessionAdapter_whenPerformingRequest_shouldPassRequestWithGivenURLToSession() async throws {
+		// Given
+		let session = MockURLSession(
+			data: Data(),
+			urlResponse: URLResponse(),
+			error: nil
+		)
+		let sut = SessionAdapter(session: session)
+
+		// When
+		_ = try await sut.performRequest(using: url)
+
+		// Then
+		XCTAssertEqual(session.receivedRequest?.url, url)
 	}
 	
 	func testSessionAdapter_whenPerformRequestReturnsError_shouldThrowError() async throws {

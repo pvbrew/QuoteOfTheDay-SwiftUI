@@ -22,27 +22,49 @@ final class QuoteAggregateModel {
 		do {
 			loadState = .loaded(try await apiClient.getRandomQuote())
 		} catch {
-			loadState = .failed(error)
+			loadState = .failed(error.localizedDescription)
 		}
 	}
 	
-	func saveFavourite(quote: Quote, context: ModelContext) {
+	func toggleFavourite(quote: Quote, context: ModelContext) throws {
+		if let favouriteQuote = try findFavourite(
+			quote: quote,
+			context: context
+		) {
+			try removeFavourite(quote: favouriteQuote, context: context)
+		} else {
+			try saveFavourite(quote: quote, context: context)
+		}
+	}
+	
+	private func saveFavourite(quote: Quote, context: ModelContext) throws {
 		let favouriteQuote = FavouriteQuote(
 			quote: quote.quote,
 			author: quote.author
 		)
 		context.insert(favouriteQuote)
-		try? context.save()
+		try context.save()
+	}
+	
+	func removeFavourite(
+		quote: FavouriteQuote,
+		context: ModelContext
+	) throws {
+		context.delete(quote)
+		try context.save()
 	}
 
-	func isQuoteFavourite(
-		_ quote: Quote,
-		in favouriteQuotes: [FavouriteQuote]
-	) -> Bool {
-		favouriteQuotes.contains { favouriteQuote in
+	private func findFavourite(
+		quote: Quote,
+		context: ModelContext
+	) throws -> FavouriteQuote? {
+		let predicate = #Predicate<FavouriteQuote> { favouriteQuote in
 			favouriteQuote.quote == quote.quote
 			&& favouriteQuote.author == quote.author
 		}
+		var descriptor = FetchDescriptor<FavouriteQuote>(predicate: predicate)
+		descriptor.fetchLimit = 1
+		return try context.fetch(descriptor).first
 	}
 }
 
@@ -50,6 +72,6 @@ extension QuoteAggregateModel {
 	enum LoadState {
 		case loading
 		case loaded(Quote)
-		case failed(Error)
+		case failed(String)
 	}
 }
