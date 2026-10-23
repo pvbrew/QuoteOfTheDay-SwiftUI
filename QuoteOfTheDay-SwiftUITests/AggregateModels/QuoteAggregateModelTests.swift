@@ -76,10 +76,10 @@ final class QuoteAggregateModelTests: XCTestCase {
 		)
 		let context = ModelContext(container)
 		context.insert(favouriteQuote)
-		try? context.save()
+		try context.save()
 		
 		// When
-		try! sut.toggleFavourite(quote: quote, context: context)
+		try sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
 		XCTAssertTrue(try fetch(fromContext: context).isEmpty)
@@ -106,7 +106,7 @@ final class QuoteAggregateModelTests: XCTestCase {
 		try? context.save()
 		
 		// When
-		try! sut.toggleFavourite(quote: quote, context: context)
+		try sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
 		let favourites = try fetch(fromContext: context)
@@ -128,7 +128,7 @@ final class QuoteAggregateModelTests: XCTestCase {
 		let context = ModelContext(container)
 		
 		// When
-		try! sut.toggleFavourite(quote: quote, context: context)
+		try sut.toggleFavourite(quote: quote, context: context)
 		
 		// Then
 		let favourites = try fetch(fromContext: context)
