@@ -63,6 +63,7 @@ struct QuoteView: View {
 	)
 	let context = ModelContext(container)
 	context.insert(FavouriteQuote(quote: quote.quote, author: quote.author))
+	try! context.save()
 	
 	return QuoteView(quote: quote, onFetchNewQuote: {
 	}, onFavouriteToggle: {
