@@ -94,7 +94,12 @@ struct MainView: View {
 			Quote(quote: "Quote", author: "Author")
 		}
 	}
+	let container = try! ModelContainer(
+		for: FavouriteQuote.self,
+		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+	)
 	return MainView(
 		quoteAggregateModel: QuoteAggregateModel(apiClient: MockAPIClient())
 	)
+	.modelContainer(container)
 }
