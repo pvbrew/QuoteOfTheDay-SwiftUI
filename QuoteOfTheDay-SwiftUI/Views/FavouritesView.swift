@@ -11,8 +11,12 @@ import SwiftData
 struct FavouritesView: View {
 	@Query private var favouriteQuotes: [FavouriteQuote]
 	@Environment(\.modelContext) private var context
-	@Environment(QuoteAggregateModel.self) private var quoteAggregateModel
+	private let quoteAggregateModel: QuoteAggregateModel
 	@State private var errorDeletingFavourite: String?
+	
+	init(quoteAggregateModel: QuoteAggregateModel) {
+		self.quoteAggregateModel = quoteAggregateModel
+	}
 	
     var body: some View {
 		if !favouriteQuotes.isEmpty {
@@ -64,6 +68,11 @@ struct FavouritesView: View {
 }
 
 #Preview("With favourites") {
+	final class MockAPIClient: APIClientProtocol {
+		func getRandomQuote() async throws -> Quote {
+			Quote(quote: "Quote", author: "Author")
+		}
+	}
 	let container = try! ModelContainer(
 		for: FavouriteQuote.self,
 		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
@@ -71,16 +80,25 @@ struct FavouritesView: View {
 	let context = ModelContext(container)
 	context.insert(FavouriteQuote(quote: "Quote", author: "Author"))
 	context.insert(FavouriteQuote(quote: "Quote", author: "Author"))
-	return FavouritesView()
-		.modelContainer(container)
+	try! context.save()
+	return FavouritesView(
+		quoteAggregateModel: QuoteAggregateModel(apiClient: MockAPIClient())
+	)
+	.modelContainer(container)
 }
 
-
 #Preview("No favourites") {
+	final class MockAPIClient: APIClientProtocol {
+		func getRandomQuote() async throws -> Quote {
+			Quote(quote: "Quote", author: "Author")
+		}
+	}
 	let container = try! ModelContainer(
 		for: FavouriteQuote.self,
 		configurations: ModelConfiguration(isStoredInMemoryOnly: true)
 	)
-	return FavouritesView()
-		.modelContainer(container)
+	return FavouritesView(
+		quoteAggregateModel: QuoteAggregateModel(apiClient: MockAPIClient())
+	)
+	.modelContainer(container)
 }
