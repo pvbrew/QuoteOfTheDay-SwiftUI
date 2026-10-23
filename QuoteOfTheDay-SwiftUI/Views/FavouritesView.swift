@@ -44,23 +44,7 @@ struct FavouritesView: View {
 				}
 			}
 			.scrollContentBackground(.hidden)
-			.alert(
-				"Error",
-				isPresented: Binding(
-					get: { errorDeletingFavourite != nil },
-					set: { isPresented in
-						if !isPresented {
-							errorDeletingFavourite = nil
-						}
-					}
-				),
-				actions: {
-					Button("OK", role: .cancel) {}
-				},
-				message: {
-					Text(errorDeletingFavourite ?? "")
-				}
-			)
+			.errorAlert(message: $errorDeletingFavourite)
 		} else {
 			ContentUnavailableView("No favourites", systemImage: "heart.slash")
 		}

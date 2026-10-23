@@ -61,23 +61,7 @@ struct MainView: View {
 			}
 		})
 		.padding()
-		.alert(
-			"Error",
-			isPresented: Binding(
-				get: { errorTogglingFavourite != nil },
-				set: { isPresented in
-					if !isPresented {
-						errorTogglingFavourite = nil
-					}
-				}
-			),
-			actions: {
-				Button("OK", role: .cancel) {}
-			},
-			message: {
-				Text(errorTogglingFavourite ?? "")
-			}
-		)
+		.errorAlert(message: $errorTogglingFavourite)
 		.task {
 			await fetchRandomQuote()
 		}
