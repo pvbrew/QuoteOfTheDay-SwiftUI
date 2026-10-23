@@ -103,7 +103,7 @@ final class QuoteAggregateModelTests: XCTestCase {
 		let context = ModelContext(container)
 		context.insert(favouriteQuote)
 		context.insert(favouriteQuote2)
-		try? context.save()
+		try context.save()
 		
 		// When
 		try sut.toggleFavourite(quote: quote, context: context)
