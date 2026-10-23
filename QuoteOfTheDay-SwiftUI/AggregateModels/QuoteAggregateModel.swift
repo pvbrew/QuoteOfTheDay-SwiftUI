@@ -31,24 +31,27 @@ final class QuoteAggregateModel {
 			quote: quote,
 			context: context
 		) {
-			removeFavourite(quote: favouriteQuote, context: context)
+			try removeFavourite(quote: favouriteQuote, context: context)
 		} else {
-			saveFavourite(quote: quote, context: context)
+			try saveFavourite(quote: quote, context: context)
 		}
 	}
 	
-	private func saveFavourite(quote: Quote, context: ModelContext) {
+	private func saveFavourite(quote: Quote, context: ModelContext) throws {
 		let favouriteQuote = FavouriteQuote(
 			quote: quote.quote,
 			author: quote.author
 		)
 		context.insert(favouriteQuote)
-		try? context.save()
+		try context.save()
 	}
 	
-	private func removeFavourite(quote: FavouriteQuote, context: ModelContext) {
+	private func removeFavourite(
+		quote: FavouriteQuote,
+		context: ModelContext
+	) throws {
 		context.delete(quote)
-		try? context.save()
+		try context.save()
 	}
 
 	private func findFavourite(
