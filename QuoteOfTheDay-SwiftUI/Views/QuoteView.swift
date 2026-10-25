@@ -13,6 +13,10 @@ struct QuoteView: View {
 	let onFetchNewQuote: () -> Void
 	let onFavouriteToggle: () -> Void
 	@Query private var matchingFavouriteQuotes: [FavouriteQuote]
+	private var isFavourite: Bool {
+		!matchingFavouriteQuotes.isEmpty
+	}
+	@State private var isPopping = false
 	
 	init(
 		quote: Quote,
@@ -41,10 +45,28 @@ struct QuoteView: View {
 				}
 				Button {
 					onFavouriteToggle()
+					withAnimation(
+						.spring(
+							response: 0.2,
+							dampingFraction: 0.4
+						)
+					) {
+						isPopping = true
+					} completion: {
+						withAnimation(
+							.spring(
+								response: 0.2,
+								dampingFraction: 0.4
+							)
+						) {
+							isPopping = false
+						}
+					}
 				} label: {
-					Image(
-						systemName: matchingFavouriteQuotes.isEmpty ? "heart" : "heart.fill"
-					)
+					Image(systemName: isFavourite ? "heart.fill" : "heart")
+						.foregroundStyle(isFavourite ? .red : .gray)
+						.animation(.easeInOut, value: isFavourite)
+						.scaleEffect(isPopping ? 1.3 : 1.0)
 				}
 			}
 			Spacer()
