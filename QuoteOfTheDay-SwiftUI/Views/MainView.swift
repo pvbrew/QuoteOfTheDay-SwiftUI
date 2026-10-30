@@ -9,10 +9,21 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
+	enum FetchingQuoteState {
+		case loading
+		case finished
+	}
+	
 	@State private var quoteAggregateModel: QuoteAggregateModel
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
 	@State private var errorTogglingFavourite: String?
+	private var fetchingQuoteState: FetchingQuoteState {
+		switch quoteAggregateModel.loadState {
+			case .loading: return .loading
+			case .loaded, .failed: return .finished
+		}
+	}
 	
 	init(
 		quoteAggregateModel: QuoteAggregateModel = QuoteAggregateModel()
@@ -49,6 +60,7 @@ struct MainView: View {
 					}
 				}
 			})
+			.animation(.easeInOut, value: fetchingQuoteState)
 			.toolbar(content: {
 				Button {
 					isShowingFavourites = true
