@@ -17,14 +17,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select newest Xcode
-        run: |
-          ls -d /Applications/Xcode*.app
-          LATEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
-          sudo xcode-select -s "$LATEST/Contents/Developer"
-
       - name: Show Xcode version
         run: xcodebuild -version
+
+      # GitHub-hosted runners ship Xcode 26.x, while the project is saved in the
+      # Xcode 27 format (objectVersion 110) and targets iOS 27. Patch the runner's
+      # checkout only; remove this step once runners provide Xcode 27.
+      - name: Make project compatible with the runner's Xcode
+        run: |
+          sed -i '' -e 's/objectVersion = 110;/objectVersion = 77;/' \
+                    -e 's/IPHONEOS_DEPLOYMENT_TARGET = 27.0;/IPHONEOS_DEPLOYMENT_TARGET = 26.0;/' \
+            QuoteOfTheDay-SwiftUI.xcodeproj/project.pbxproj
 
       - name: Pick an iPhone simulator
         run: |
