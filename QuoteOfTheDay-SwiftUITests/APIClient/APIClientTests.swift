@@ -118,7 +118,7 @@ final class APIClientTests: XCTestCase {
 		// Given
 		let sessionAdapter = MockSessionAdapter(
 			data: try dataFrom(
-				model: try! decode([Quote].self, from: "no_quotes")
+				model: try decode([Quote].self, from: "no_quotes")
 			),
 			urlResponse: makeHTTPURLResponse(),
 			error: nil
