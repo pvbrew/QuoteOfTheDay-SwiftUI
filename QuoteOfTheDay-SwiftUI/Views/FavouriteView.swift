@@ -18,14 +18,14 @@ struct FavouriteView: View {
 		VStack(alignment: .leading, spacing: 16.0) {
 			Text(quote.quote)
 				.font(.title2)
-				.accessibilityLabel("Quote text \(quote.quote)")
 			HStack {
 				Spacer()
 				Text(quote.author)
 					.font(.caption)
-					.accessibilityLabel("Author \(quote.author)")
+					.accessibilityLabel("by \(quote.author)")
 			}
 		}
+		.accessibilityElement(children: .combine)
 		.padding()
     }
 }

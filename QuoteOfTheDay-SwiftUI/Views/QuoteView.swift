@@ -40,11 +40,11 @@ struct QuoteView: View {
 				VStack {
 					Text(quote.quote)
 						.font(.title)
-						.accessibilityLabel("Quote text \(quote.quote)")
 					Text(quote.author)
 						.font(.caption)
-						.accessibilityLabel("Author \(quote.author)")
+						.accessibilityLabel("by \(quote.author)")
 				}
+				.accessibilityElement(children: .combine)
 				Button {
 					guard onFavouriteToggle() else { return }
 					withAnimation(
