@@ -22,8 +22,10 @@ struct FavouriteView: View {
 				Spacer()
 				Text(quote.author)
 					.font(.caption)
+					.accessibilityLabel("by \(quote.author)")
 			}
 		}
+		.accessibilityElement(children: .combine)
 		.padding()
     }
 }

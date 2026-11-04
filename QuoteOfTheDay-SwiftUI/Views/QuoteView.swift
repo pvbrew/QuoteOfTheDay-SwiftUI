@@ -11,13 +11,17 @@ import SwiftData
 struct QuoteView: View {
 	private let quote: Quote
 	let onFetchNewQuote: () -> Void
-	let onFavouriteToggle: () -> Void
+	let onFavouriteToggle: () -> Bool
 	@Query private var matchingFavouriteQuotes: [FavouriteQuote]
+	private var isFavourite: Bool {
+		!matchingFavouriteQuotes.isEmpty
+	}
+	@State private var isPopping = false
 	
 	init(
 		quote: Quote,
 		onFetchNewQuote: @escaping () -> Void,
-		onFavouriteToggle: @escaping () -> Void
+		onFavouriteToggle: @escaping () -> Bool
 	) {
 		self.quote = quote
 		self.onFetchNewQuote = onFetchNewQuote
@@ -38,14 +42,37 @@ struct QuoteView: View {
 						.font(.title)
 					Text(quote.author)
 						.font(.caption)
+						.accessibilityLabel("by \(quote.author)")
 				}
+				.accessibilityElement(children: .combine)
 				Button {
-					onFavouriteToggle()
+					guard onFavouriteToggle() else { return }
+					withAnimation(
+						.spring(
+							response: 0.2,
+							dampingFraction: 0.4
+						)
+					) {
+						isPopping = true
+					} completion: {
+						withAnimation(
+							.spring(
+								response: 0.2,
+								dampingFraction: 0.4
+							)
+						) {
+							isPopping = false
+						}
+					}
 				} label: {
-					Image(
-						systemName: matchingFavouriteQuotes.isEmpty ? "heart" : "heart.fill"
-					)
+					Image(systemName: isFavourite ? "heart.fill" : "heart")
+						.foregroundStyle(isFavourite ? .red : .gray)
+						.animation(.easeInOut, value: isFavourite)
+						.scaleEffect(isPopping ? 1.3 : 1.0)
 				}
+				.accessibilityLabel(
+					isFavourite ? "Remove from favourites" : "Add to favourites"
+				)
 			}
 			Spacer()
 			Button("New Quote") {
@@ -67,6 +94,7 @@ struct QuoteView: View {
 	
 	return QuoteView(quote: quote, onFetchNewQuote: {
 	}, onFavouriteToggle: {
+		true
 	}).modelContainer(container)
 }
 
@@ -81,5 +109,6 @@ struct QuoteView: View {
 	
 	return QuoteView(quote: quote, onFetchNewQuote: {
 	}, onFavouriteToggle: {
+		true
 	}).modelContainer(container)
 }

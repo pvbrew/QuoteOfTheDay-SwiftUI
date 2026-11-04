@@ -9,10 +9,21 @@ import SwiftUI
 import SwiftData
 
 struct MainView: View {
+	enum FetchingQuoteState {
+		case loading
+		case finished
+	}
+	
 	@State private var quoteAggregateModel: QuoteAggregateModel
 	@State private var isShowingFavourites = false
 	@Environment(\.modelContext) private var context
 	@State private var errorTogglingFavourite: String?
+	private var fetchingQuoteState: FetchingQuoteState {
+		switch quoteAggregateModel.loadState {
+			case .loading: return .loading
+			case .loaded, .failed: return .finished
+		}
+	}
 	
 	init(
 		quoteAggregateModel: QuoteAggregateModel = QuoteAggregateModel()
@@ -29,7 +40,7 @@ struct MainView: View {
 				case .loaded(let quote):
 					QuoteView(quote: quote) {
 							Task {
-								await fetchRandomQuote()
+								await quoteAggregateModel.fetchRandomQuote()
 							}
 						} onFavouriteToggle: {
 							do {
@@ -37,18 +48,21 @@ struct MainView: View {
 									quote: quote,
 									context: context
 								)
+								return true
 							} catch {
 								errorTogglingFavourite = error.localizedDescription
+								return false
 							}
 						}
 				case .failed(let error):
 					ErrorView(error: error) {
 						Task {
-							await fetchRandomQuote()
+							await quoteAggregateModel.fetchRandomQuote()
 						}
 					}
 				}
 			})
+			.animation(.easeInOut, value: fetchingQuoteState)
 			.toolbar(content: {
 				Button {
 					isShowingFavourites = true
@@ -63,13 +77,9 @@ struct MainView: View {
 		.padding()
 		.errorAlert(message: $errorTogglingFavourite)
 		.task {
-			await fetchRandomQuote()
+			await quoteAggregateModel.fetchRandomQuote()
 		}
     }
-	
-	private func fetchRandomQuote() async {
-		await quoteAggregateModel.fetchRandomQuote()
-	}
 }
 
 #Preview {
