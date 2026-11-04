@@ -40,7 +40,7 @@ struct MainView: View {
 				case .loaded(let quote):
 					QuoteView(quote: quote) {
 							Task {
-								await fetchRandomQuote()
+								await quoteAggregateModel.fetchRandomQuote()
 							}
 						} onFavouriteToggle: {
 							do {
@@ -55,7 +55,7 @@ struct MainView: View {
 				case .failed(let error):
 					ErrorView(error: error) {
 						Task {
-							await fetchRandomQuote()
+							await quoteAggregateModel.fetchRandomQuote()
 						}
 					}
 				}
@@ -75,13 +75,9 @@ struct MainView: View {
 		.padding()
 		.errorAlert(message: $errorTogglingFavourite)
 		.task {
-			await fetchRandomQuote()
+			await quoteAggregateModel.fetchRandomQuote()
 		}
     }
-	
-	private func fetchRandomQuote() async {
-		await quoteAggregateModel.fetchRandomQuote()
-	}
 }
 
 #Preview {
