@@ -11,7 +11,7 @@ import SwiftData
 struct QuoteView: View {
 	private let quote: Quote
 	let onFetchNewQuote: () -> Void
-	let onFavouriteToggle: () -> Void
+	let onFavouriteToggle: () -> Bool
 	@Query private var matchingFavouriteQuotes: [FavouriteQuote]
 	private var isFavourite: Bool {
 		!matchingFavouriteQuotes.isEmpty
@@ -21,7 +21,7 @@ struct QuoteView: View {
 	init(
 		quote: Quote,
 		onFetchNewQuote: @escaping () -> Void,
-		onFavouriteToggle: @escaping () -> Void
+		onFavouriteToggle: @escaping () -> Bool
 	) {
 		self.quote = quote
 		self.onFetchNewQuote = onFetchNewQuote
@@ -46,7 +46,7 @@ struct QuoteView: View {
 						.accessibilityLabel("Author \(quote.author)")
 				}
 				Button {
-					onFavouriteToggle()
+					guard onFavouriteToggle() else { return }
 					withAnimation(
 						.spring(
 							response: 0.2,
@@ -94,6 +94,7 @@ struct QuoteView: View {
 	
 	return QuoteView(quote: quote, onFetchNewQuote: {
 	}, onFavouriteToggle: {
+		true
 	}).modelContainer(container)
 }
 
@@ -108,5 +109,6 @@ struct QuoteView: View {
 	
 	return QuoteView(quote: quote, onFetchNewQuote: {
 	}, onFavouriteToggle: {
+		true
 	}).modelContainer(container)
 }

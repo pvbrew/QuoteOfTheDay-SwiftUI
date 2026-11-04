@@ -48,8 +48,10 @@ struct MainView: View {
 									quote: quote,
 									context: context
 								)
+								return true
 							} catch {
 								errorTogglingFavourite = error.localizedDescription
+								return false
 							}
 						}
 				case .failed(let error):
