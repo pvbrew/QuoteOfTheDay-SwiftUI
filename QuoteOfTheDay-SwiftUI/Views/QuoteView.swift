@@ -40,8 +40,10 @@ struct QuoteView: View {
 				VStack {
 					Text(quote.quote)
 						.font(.title)
+						.accessibilityLabel("Quote text \(quote.quote)")
 					Text(quote.author)
 						.font(.caption)
+						.accessibilityLabel("Author \(quote.author)")
 				}
 				Button {
 					onFavouriteToggle()
@@ -68,6 +70,9 @@ struct QuoteView: View {
 						.animation(.easeInOut, value: isFavourite)
 						.scaleEffect(isPopping ? 1.3 : 1.0)
 				}
+				.accessibilityLabel(
+					isFavourite ? "Remove from favourites" : "Add to favourites"
+				)
 			}
 			Spacer()
 			Button("New Quote") {
